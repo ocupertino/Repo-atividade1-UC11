@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,13 +48,65 @@ public class ProdutosDAO {
             Class.forName("com.mysql.cj.jdbc.Driver");
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/attuc11", "root", "1234");
             return true;
-        }catch(ClassNotFoundException | SQLException ex){
+        } catch (ClassNotFoundException | SQLException ex) {
             System.out.println("Erro ao conectar: " + ex.getMessage());
             return false;
         }
     }
 
+    public ProdutosDTO listar() {
+        try {
+            ProdutosDTO produtosDTO = new ProdutosDTO();
+            st = conn.prepareCall("select * from produtos");
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                produtosDTO.setId(rs.getString("id"));
+                produtosDTO.setNome(rs.getString("nome"));
+                produtosDTO.setValor(rs.getString("valor"));
+                produtosDTO.setStatus(rs.getString("statuss"));
+                return produtosDTO;
+            } else {
+                return null;
+            }
+
+        } catch (SQLException ex) {
+            System.out.println("Erro ao conectar: " + ex.getMessage());
+            return null;
+        }
+    }
     
+    public List<ProdutosDTO> listarStatus(String sta){
+        String sql = "select * from produtos where statuss = ?";
+        
+        if (conn == null) {
+            connectDB();
+        }
+        
+        try {
+            PreparedStatement stmt = this.conn.prepareStatement(sql);
+            
+            stmt.setString(1, sta);
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            List<ProdutosDTO> listaProdutos = new ArrayList();
+            
+            while (rs.next()) {                
+                ProdutosDTO produtos = new ProdutosDTO();
+                
+                produtos.setId(rs.getString("id"));
+                produtos.setNome(rs.getString("nome"));
+                produtos.setValor(rs.getString("valor"));
+                produtos.setStatus(rs.getString("statuss"));
+                
+                listaProdutos.add(produtos);
+            }
+            return listaProdutos;
+        } catch (SQLException exception) {
+            return null;
+        }
+    }
 
     public ArrayList<ProdutosDTO> listarProdutos() {
 
